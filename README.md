@@ -2,13 +2,13 @@ Hello world script
 ====================
 
 A simple script showing the MiSeq 16S DADA2 for the Nextflow framework.
-Output directory is at aws s3
+The output directory is at aws s3
 
 ```{bash}
-nextflow run -resume main.nf .....
+nextflow run -resume main.nf --run_id 'MITI-MCB' --input_path 's3://maf-users/MITI/MiSeq' --output_path 's3://genomics-workflow-core/Results/MiSeq-16s-dada'
 ```
 
-# Updated version with a seedfile as the input file
+# Sample commands to submit an aws batch job
 ```{bash}
 aws batch submit-job \
     --job-name nf-miseq-16s-dada2 \
