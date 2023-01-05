@@ -9,7 +9,7 @@ def helpMessage() {
     Run customized DADA2 pipeline to process MiSeq reads for strain purity check
 
     Required Arguments:
-      --run_id        string      MiSeq run name
+      --project       string      MiSeq project name
       --input_path    string      input:  s3 path
       --output_path   string      output: s3 path
       --db            string      db:  silva efs path
@@ -53,9 +53,9 @@ process run_dada2 {
 
     script:
     """
-    export S3INPUTPATH="${input_path}/${params.run_id}/fastqs"
-    export S3OUTPUTPATH="${output_path}/${params.run_id}"
+    export S3INPUTPATH="${input_path}/${params.project}/fastqs"
+    export S3OUTPUTPATH="${output_path}/${params.project}"
     export DB="${params.db}"
-    /work/16s_wrapper.sh
+    16s_wrapper.sh
     """
 }
