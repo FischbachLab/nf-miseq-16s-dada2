@@ -64,7 +64,7 @@ names(filtRs) <- sample.names
 # v4 -> c(220,160), maxEE=c(2,2),
 # v3v4 -> c(250,230) maxEE=c(3,6)
 out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs,
-	      truncLen=c(210,150),   #c(220,160),
+	      truncLen=c(220,160),   #c(220,160),
               maxN=0,
 	      trimLeft=c(10,10),
 	      #trimLeft=c(20,20), trimRight=c(35,35),     # trimLeft=c(10,10), 
