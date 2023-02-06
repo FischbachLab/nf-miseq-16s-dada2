@@ -28,7 +28,7 @@ aws s3 sync /path/to/local/storage/myBasespace/project_name/fastqs/  s3://maf-us
 nextflow run -resume main.nf --project 'MITI-MCB' --input_path 's3://maf-users/MITI/MiSeq' --output_path 's3://genomics-workflow-core/Results/MiSeq-16s-dada2'
 ```
 
-## Sample commands to submit an aws batch job  s3://nextflow-pipelines/nf-miseq-16s-dada2
+## Sample commands to submit an aws batch job
 ```{bash}
 aws batch submit-job \
     --job-name nf-miseq-16s-dada2 \
