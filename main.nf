@@ -53,7 +53,7 @@ process run_dada2 {
 
     script:
     """
-    export S3INPUTPATH="${input_path}/${params.project}/fastqs"
+    export S3INPUTPATH="${input_path}/fastqs"
     export S3OUTPUTPATH="${output_path}/${params.project}"
     export DB="${params.db}"
     16s_wrapper.sh

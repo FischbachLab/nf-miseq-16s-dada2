@@ -37,7 +37,7 @@ aws batch submit-job \
     --container-overrides command="FischbachLab/nf-miseq-16s-dada2, \
     "-r", "main", \
     "--project", "MITI-MCB", \
-    "--input_path", "s3://maf-sequencing/Illumina/MiSeq", \
+    "--input_path", "s3://maf-sequencing/Illumina/MiSeq/MITI-MCB", \
     "--output_path", "s3://genomics-workflow-core/Results/MiSeq-16s-dada2" "
 ```
 
