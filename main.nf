@@ -44,7 +44,7 @@ process run_dada2 {
 
     container params.container
     cpus 8
-    memory 16.GB
+    memory 32.GB
     publishDir "${output_path}", mode:'copy'
 
     input:
