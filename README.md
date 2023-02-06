@@ -35,6 +35,7 @@ aws batch submit-job \
     --job-queue priority-maf-pipelines \
     --job-definition nextflow-production \
     --container-overrides command="FischbachLab/nf-miseq-16s-dada2, \
+    "-r", "main", \
     "--project", "MITI-MCB", \
     "--input_path", "s3://maf-sequencing/Illumina/MiSeq", \
     "--output_path", "s3://genomics-workflow-core/Results/MiSeq-16s-dada2" "
