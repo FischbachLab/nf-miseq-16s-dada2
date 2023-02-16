@@ -47,11 +47,11 @@ aws batch submit-job \
 s3://genomics-workflow-core/Results/MiSeq-16s-dada2/MITI-MCB/
 ```
 
-### The summary file can be found at:
+### The summary file can be found at
 ```{bash}
 s3://genomics-workflow-core/Results/MiSeq-16s-dada2/MITI-MCB/DADA2_summary/Genus_summary.tsv
 ```
-### The saved parameter file can be found at:
+### The saved parameter file can be found at
 ```{bash}
 s3://genomics-workflow-core/Results/MiSeq-16s-dada2/MITI-MCB/Logs/parameters.yaml
 ```
