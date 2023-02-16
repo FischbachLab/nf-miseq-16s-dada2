@@ -36,14 +36,19 @@ trap '{ rm -rf ${OUTPUTDIR} ; exit 255; }' 1
 # download samples
 aws s3 sync --quiet $S3INPUTPATH ${INPUT_DIR}
 
+# down load config file
+aws s3 cp --quiet $CONFIG "${LOG_DIR}/parameters.yaml"
+
 # run DADA2 pipeline
-#input parameter: ouptut dir & input fastq dir
-#timem ${scriptFolder}/post_processing.sh ${LOCAL_OUTPUT} ${INPUT_DIR} ${DB} &>> ${LOG_DIR}/16s.log.txt
-16S.R ${LOCAL_OUTPUT} ${INPUT_DIR} ${DB}
+#input parameter: ouptut_dir, input_fastq_dir config_file db_file
+16S.R ${LOCAL_OUTPUT} ${INPUT_DIR} "${LOG_DIR}/parameters.yaml" ${DB}
+#aws s3 sync --quiet ${LOCAL_OUTPUT} ${S3OUTPUTPATH}
 fix_summary.py ${LOCAL_OUTPUT}/Sample_stats.tsv ${LOCAL_OUTPUT}/ASVs_taxonomy_dada2.tsv ${LOCAL_OUTPUT}/ASVs_counts.tsv
 
 mv ${LOCAL}/Rplots.pdf ${LOCAL_OUTPUT}
 mv ${LOCAL}/DADA2_summary ${LOCAL_OUTPUT}
+# save the parameters used in this run
+#mv ${LOG_DIR}/parameters.yaml ${LOCAL_OUTPUT}
 
 ######################### HOUSEKEEPING #############################
 DURATION=$((SECONDS - START_TIME))

@@ -10,6 +10,7 @@ def helpMessage() {
 
     Required Arguments:
       --project       string      MiSeq project name
+      --config        string      input parameter file
       --input_path    string      input:  s3 path
       --output_path   string      output: s3 path
       --db            string      db:  silva efs path
@@ -35,6 +36,7 @@ if (params.help){
 
 def output_path = "${params.output_path}"
 def input_path = "${params.input_path}"
+def config_file = "${params.config}"
 
 /*
  * Run the pipeline
@@ -55,6 +57,7 @@ process run_dada2 {
     """
     export S3INPUTPATH="${input_path}/fastqs"
     export S3OUTPUTPATH="${output_path}/${params.project}"
+    export CONFIG="${config_file}"
     export DB="${params.db}"
     16s_wrapper.sh
     """

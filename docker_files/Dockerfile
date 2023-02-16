@@ -31,32 +31,30 @@ LABEL org.label-schema.version = "1.18.0"
 RUN R -e 'BiocManager::install("dada2", version="3.12", update=TRUE, ask=FALSE)'
 RUN R -e 'BiocManager::install("phyloseq", version="3.12", update=TRUE, ask=FALSE)'
 #RUN R -e 'BiocManager::install("decontam", version="3.12", update=TRUE, ask=FALSE)'
-
+RUN R -e 'install.packages("yaml")'
 
 # Update conda to latest version.
 RUN conda update -n base -c defaults conda
 
 # Add conda channels
-RUN conda config --add channels defaults
+#RUN conda config --add channels defaults
 RUN conda config --add channels bioconda
 RUN conda config --add channels conda-forge
 
 # Install software packages
-#RUN conda install -c bioconda -y bioconductor-dada2 \
-  #&& conda install -c bioconda -y bioconductor-phyloseq  \
-RUN conda install -y numpy pandas python \
-   && conda install -c conda-forge -y awscli \
+RUN conda install --freeze-installed -y numpy pandas python=3.7.6 \
+   && conda install --freeze-installed -c conda-forge -y awscli \
    && conda clean -afy
 
 # Install time and memory usage tool (timem)
-RUN conda install -c jrmadsen -y timemory
+#RUN conda install -c jrmadsen -y timemory
 
-ADD fix_summary.py /usr/local/bin/fix_summary.py
-RUN chmod +x /usr/local/bin/fix_summary.py
-ADD 16s_wrapper.sh /usr/local/bin/16s_wrapper.sh
-RUN chmod +x /usr/local/bin/16s_wrapper.sh
-ADD 16S.R /usr/local/bin/16S.R
-RUN chmod +x /usr/local/bin/16S.R
+#ADD fix_summary.py /usr/local/bin/fix_summary.py
+#RUN chmod +x /usr/local/bin/fix_summary.py
+#ADD 16s_wrapper.sh /usr/local/bin/16s_wrapper.sh
+#RUN chmod +x /usr/local/bin/16s_wrapper.sh
+#ADD 16S.R /usr/local/bin/16S.R
+#RUN chmod +x /usr/local/bin/16S.R
 
 RUN mkdir -p /work
 WORKDIR /work

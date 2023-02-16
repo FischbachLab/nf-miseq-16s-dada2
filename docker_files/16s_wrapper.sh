@@ -39,7 +39,8 @@ aws s3 sync --quiet $S3INPUTPATH ${INPUT_DIR}
 # run DADA2 pipeline
 #input parameter: ouptut dir & input fastq dir
 #timem ${scriptFolder}/post_processing.sh ${LOCAL_OUTPUT} ${INPUT_DIR} ${DB} &>> ${LOG_DIR}/16s.log.txt
-timem Rscript /usr/local/bin/16S.R ${LOCAL_OUTPUT} ${INPUT_DIR} ${DB}
+Rscript /usr/local/bin/16S.R ${LOCAL_OUTPUT} ${INPUT_DIR} ${DB}
+
 python /usr/local/bin/fix_summary.py ${LOCAL_OUTPUT}/Sample_stats.tsv ${LOCAL_OUTPUT}/ASVs_taxonomy_dada2.tsv ${LOCAL_OUTPUT}/ASVs_counts.tsv
 
 mv ${LOCAL}/Rplots.pdf ${LOCAL_OUTPUT}

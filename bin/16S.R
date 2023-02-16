@@ -1,32 +1,18 @@
-#!/usr/bin/env Rscript 
+#!/usr/bin/env Rscript
+
 library("dada2"); packageVersion("dada2")
+library("yaml"); packageVersion("yaml")
 #library("phyloseq"); packageVersion("phyloseq")
-
-#install DECIPHER http://www2.decipher.codes/
-#if (!requireNamespace("BiocManager", quietly=TRUE))
-#    install.packages("BiocManager")
-#BiocManager::install("DECIPHER")
-#if (!requireNamespace("BiocManager", quietly = TRUE))
-#    install.packages("BiocManager")
-#BiocManager::install("phyloseq")
-
-
-# set number of threads
-#num.cores <- 2
-
 
 args <- commandArgs(trailingOnly = TRUE)
 # set output paths
 output_path  <- args[1]  #"/data/ampliseq/201014_16Sv4_Test2/DADA2_summary" #THIS SHOULD BE THE DADA2_summary folder
 #output_path2 <- "/data/ampliseq/201014_16Sv4_Test2/DADA2_outputs" #THIS SHOULD BE THE DADA2_output folder
-
 # create output directories
 mainDir <- output_path
 #dir.create( mainDir )
 subDir <- "DADA2_summary"
 dir.create(file.path(mainDir, subDir))
-
-#mainDir <- "."
 #subDir <- "DADA2_outputs"
 #dir.create(file.path(mainDir, subDir))
 
@@ -35,12 +21,9 @@ dir.create(file.path(mainDir, subDir))
 path <- args[2] # "/data/myBaseSpace/201014_16Sv4_Test2/fastq"
 list.files(path)
 
-#setwd("/data/ampliseq/Allison/data")
-#list.files() # make sure what we think is here is actually here
-## first we're setting a few variables we're going to use ##
-# one with all sample names, by scanning our "samples" file we made earlier
-#samples is a file containing a list of samples
-#samples <- scan("samples", what="character")
+# read a list of parameters from a yaml file
+config_path  <- args[3]
+config <- yaml.load_file(config_path, as.named.list=TRUE)
 
 # Forward and reverse fastq filenames have format: SAMPLENAME_R1_001.fastq and SAMPLENAME_R2_001.fastq
 fnFs <- sort(list.files(path, pattern="_R1_001.fastq.gz", full.names = TRUE))
@@ -51,7 +34,7 @@ sample.names <- sapply(strsplit(basename(fnFs), "_L001_R1_001.fastq.gz"), `[`, 1
 #Inspect read quality profiles of F and R
 #plotQualityProfile(fnFs[1:2])
 #plotQualityProfile(fnRs[1:2])
-fns2=cbind(fnFs[1:2], fnRs[1:2])
+fns2=cbind(fnFs[1:10], fnRs[1:10])
 plotQualityProfile(fns2)
 
 # Place filtered files in filtered/ subdirectory
@@ -65,15 +48,14 @@ names(filtRs) <- sample.names
 # v4 -> c(220,160), maxEE=c(2,2),
 # v3v4 -> c(250,230) maxEE=c(3,6)
 out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs,
-	      truncLen=c(210,150),   #c(220,160),
-              maxN=0,
-	      trimLeft=c(10,10),
-	      #trimLeft=c(20,20), trimRight=c(35,35),     # trimLeft=c(10,10),
-	      maxEE=c(2,2),
+	      truncLen=c(config$truncLenR1,config$truncLenR2),
+        maxN=0,
+	      trimLeft=c(config$trimLeftR1,config$trimLeftR2),
+	      maxEE=c(config$maxEER1,config$maxEER2),
 	      #minQ=0, don't use
-	      truncQ=2,
+	      truncQ=config$truncQ,
 	      rm.phix=TRUE,
-              compress=TRUE,
+        compress=TRUE,
 	      verbose=TRUE,
 	      multithread=TRUE)
 head(out)
@@ -107,7 +89,8 @@ dadaRs <- dada(derep_reverse, err=errR, pool=FALSE, multithread=TRUE)
 dadaFs[[1]]
 
 # merge PE reads
-mergers <- mergePairs(dadaFs, derep_forward, dadaRs, derep_reverse, verbose=TRUE, trimOverhang=TRUE)
+mergers <- mergePairs(dadaFs, derep_forward, dadaRs, derep_reverse, verbose=TRUE, trimOverhang=TRUE,
+                       minOverlap=config$minOverlap )  # default =12
 # Inspect the merger data.frame from the first sample
 head(mergers[[1]])
 
@@ -129,8 +112,8 @@ if (TRUE) {
 #MAXLEN <- 410
 
 #filter ASVs by length for V4
-MINLEN <- 200
-MAXLEN <- 260 #250
+MINLEN <- config$ASVMINLEN #200
+MAXLEN <- config$ASVMAXLEN #250
 
 seqlens <- nchar(getSequences(seqtab.nochim))
 seqtab.nochim.filt <- seqtab.nochim [,seqlens >= MINLEN & seqlens <= MAXLEN]
@@ -154,8 +137,8 @@ write.table(track, file.path(output_path,"Sample_stats.tsv"), sep="\t", quote=F,
 
 
 #Assign taxonomy
-taxa <- assignTaxonomy(seqtab.nochim, "/mnt/efs/scratch/Xmeng/data/MiSeq/silvaDB/silva_nr99_v138.1_train_set.fa.gz",
-		       minBoot=60, # default 50
+taxa <- assignTaxonomy(seqtab.nochim, args[4],
+		       minBoot=config$minBoot, # default 50
 		       multithread=TRUE,
 		       tryRC=TRUE)
 
