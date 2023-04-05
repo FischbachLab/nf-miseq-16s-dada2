@@ -58,8 +58,22 @@ out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs,
         compress=TRUE,
 	      verbose=TRUE,
 	      multithread=TRUE)
-head(out)
+print(out)
+# filter out the sample stat matrix reads.out ==0
+out <- out[out[, "reads.out"] > 0,]
+
 #write.table(out, "Sample_stat.tsv", sep="\t", quote=F, col.names=NA)
+
+# filter out the empty samples
+filtFs <- filtFs[file.exists(filtFs) ]
+filtRs <- filtRs[file.exists(filtRs) ]
+
+# get the filtered sample names
+sample.names <- sapply(strsplit(basename(filtFs), "_F_filt.fastq.gz"), `[`, 1)
+names(filtFs) <- sample.names
+names(filtRs) <- sample.names
+
+
 
 # generate error model
 errF <- learnErrors(filtFs, randomize=TRUE, multithread=TRUE)
