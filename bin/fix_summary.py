@@ -119,10 +119,19 @@ df2['3rd_Taxonomy'] = df.iloc[:, 0:].apply(lambda row: row.sort_values(ascending
 df2.loc[df2['3rd_Abundance(%)'] == 0, '3rd_Taxonomy'] = ''
 df2.loc[df2['3rd_Read'] == 0, '3rd_Taxonomy'] = ''
 
-df2['PASS/FAIL'] = df2.iloc[:, 0:].apply(lambda x: 'PASS' if x['1st_Abundance(%)'] >=99 and x['2nd_Abundance(%)'] <= 0.5  else 'FAIL', axis=1)
+def check_purity(x):
+    if x['1st_Abundance(%)'] >=99.5 and x['1st_Read'] >= 1000:
+       return 'PASS'
+    elif x['1st_Abundance(%)'] >=99.5 and x['1st_Read'] < 1000:
+       return 'PENDING'
+    else:
+       return 'FAIL'
+
+df2['Status'] = df2.iloc[:, 0:].apply(check_purity, axis=1)
+#df2['PASS/FAIL'] = df2.iloc[:, 0:].apply(lambda x: 'PASS' if x['1st_Abundance(%)'] >=99 and x['2nd_Abundance(%)'] <= 0.5  else 'FAIL', axis=1)
 
 # change the order of columns
-cols = ['PASS/FAIL']  + [col for col in df2 if col != 'PASS/FAIL']
+cols = ['Status']  + [col for col in df2 if col != 'Status']
 df2 = df2[cols]
 
 
