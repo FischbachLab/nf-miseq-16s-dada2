@@ -96,6 +96,10 @@ df= df.fillna(0)
 #df = df.iloc[1:, 0:][ df > min_count ].fillna(0).astype(int)
 # Do stats
 df2 = pd.DataFrame()
+
+# Get the shape of the DataFrame
+df2_num_rows, df2_num_columns = df2.shape
+
 df2['Reads_counts_genus_level/total_corrected_reads(%)'] = round(df.iloc[:, 0:].sum(axis=1)/total_corrected.iloc[:,0]*100,2)
 
 #df2['missed_counts'] = df.apply(lambda row: find_miss_counts(row, total_corrected))  #, axis=1)
@@ -106,18 +110,27 @@ df2['1st_Abundance(%)'] = round(df.iloc[:, 0:].max(axis=1)/df.iloc[:, 0:].sum(ax
 df2['1st_Taxonomy'] = df.iloc[:, 0:].idxmax(axis=1)
 df2.loc[df2['1st_Read'] == 0, '1st_Taxonomy'] = ''
 
-#df2['2nd_Read'] = df.iloc[:, 0:].apply(lambda row: row.nlargest(2).values[-1],axis=1)
-df2['2nd_Read'] = df.iloc[:, 0:].apply(lambda row: row.sort_values(ascending=False).iloc[1],axis=1)
-df2['2nd_Abundance(%)'] = round(df.iloc[:, 0:].apply(lambda row: row.sort_values(ascending=False).iloc[1],axis=1)/df.iloc[:, 0:].sum(axis=1)*100,2)
-df2['2nd_Taxonomy'] = df.iloc[:, 0:].apply(lambda row: row.sort_values(ascending=False).index[1], axis=1)
-df2.loc[df2['2nd_Abundance(%)'] == 0, '2nd_Taxonomy'] = ''
-df2.loc[df2['2nd_Read'] == 0, '2nd_Taxonomy'] = ''
+if df2_num_columns >=2:
+    df2['2nd_Read'] = df.iloc[:, 0:].apply(lambda row: row.sort_values(ascending=False).iloc[1],axis=1)
+    df2['2nd_Abundance(%)'] = round(df.iloc[:, 0:].apply(lambda row: row.sort_values(ascending=False).iloc[1],axis=1)/df.iloc[:, 0:].sum(axis=1)*100,2)
+    df2['2nd_Taxonomy'] = df.iloc[:, 0:].apply(lambda row: row.sort_values(ascending=False).index[1], axis=1)
+    df2.loc[df2['2nd_Abundance(%)'] == 0, '2nd_Taxonomy'] = ''
+    df2.loc[df2['2nd_Read'] == 0, '2nd_Taxonomy'] = ''
+else:
+     df2['2nd_Read'] = 0
+     df2['2nd_Abundance(%)'] = 0
+     df2['2nd_Taxonomy'] = ''
 
-df2['3rd_Read'] = df.iloc[:, 0:].apply(lambda row: row.sort_values(ascending=False).iloc[2],axis=1)
-df2['3rd_Abundance(%)'] = round(df.iloc[:, 0:].apply(lambda row: row.sort_values(ascending=False).iloc[2],axis=1)/df.iloc[:, 0:].sum(axis=1)*100,2)
-df2['3rd_Taxonomy'] = df.iloc[:, 0:].apply(lambda row: row.sort_values(ascending=False).index[2], axis=1)
-df2.loc[df2['3rd_Abundance(%)'] == 0, '3rd_Taxonomy'] = ''
-df2.loc[df2['3rd_Read'] == 0, '3rd_Taxonomy'] = ''
+if df2_num_columns >=3:
+    df2['3rd_Read'] = df.iloc[:, 0:].apply(lambda row: row.sort_values(ascending=False).iloc[2],axis=1)
+    df2['3rd_Abundance(%)'] = round(df.iloc[:, 0:].apply(lambda row: row.sort_values(ascending=False).iloc[2],axis=1)/df.iloc[:, 0:].sum(axis=1)*100,2)
+    df2['3rd_Taxonomy'] = df.iloc[:, 0:].apply(lambda row: row.sort_values(ascending=False).index[2], axis=1)
+    df2.loc[df2['3rd_Abundance(%)'] == 0, '3rd_Taxonomy'] = ''
+    df2.loc[df2['3rd_Read'] == 0, '3rd_Taxonomy'] = ''
+else:
+    df2['3rd_Read'] = 0
+    df2['3rd_Abundance(%)'] = 0
+    df2['3rd_Taxonomy'] = ''
 
 def check_purity(x):
     if x['1st_Abundance(%)'] >=99.5 and x['1st_Read'] >= 1000:
