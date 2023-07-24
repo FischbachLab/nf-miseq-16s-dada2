@@ -98,7 +98,7 @@ df= df.fillna(0)
 df2 = pd.DataFrame()
 
 # Get the shape of the DataFrame
-df2_num_rows, df2_num_columns = df2.shape
+df2_num_rows, df2_num_columns = df.shape
 
 df2['Reads_counts_genus_level/total_corrected_reads(%)'] = round(df.iloc[:, 0:].sum(axis=1)/total_corrected.iloc[:,0]*100,2)
 
