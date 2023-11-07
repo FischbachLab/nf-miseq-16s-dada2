@@ -1,6 +1,6 @@
 README
 ====================
-# 1. Data preparation
+# 1. Data preparation via command line commands
 
 ## 1) Install Illumina [Basemount](https://help.basespace.illumina.com/cmd-line-interfaces/basespace-cli/introduction-to-basemount)
  Basemount is a tool to mount your BaseSpace Sequence Hub data as a Linux file system

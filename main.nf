@@ -1,5 +1,5 @@
 #!/usr/bin/env nextflow
-nextflow.enable.dsl=1
+nextflow.enable.dsl=2
 // If the user uses the --help flag, print the help text below
 params.help = false
 
@@ -47,9 +47,10 @@ process run_dada2 {
     container params.container
     cpus 8
     memory 32.GB
-    publishDir "${output_path}", mode:'copy'
+    //publishDir "${output_path}", mode:'copy'
 
     input:
+    path input
 
     output:
 
@@ -61,4 +62,10 @@ process run_dada2 {
     export DB="${params.db}"
     16s_wrapper.sh
     """
+}
+
+workflow {
+
+   Channel.fromPath(params.input_path) | run_dada2
+
 }
