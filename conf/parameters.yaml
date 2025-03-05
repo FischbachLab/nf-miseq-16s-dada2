@@ -7,5 +7,6 @@ trimLeftR2: 10
 truncQ: 2
 minOverlap: 25
 minBoot:  60
-ASVMINLEN: 230
+ASVMINLEN: 150
 ASVMAXLEN: 260
+ASVMINABUND: 1

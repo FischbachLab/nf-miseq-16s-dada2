@@ -1,8 +1,19 @@
-#!/usr/bin/env Rscript
-
 library("dada2"); packageVersion("dada2")
-library("yaml"); packageVersion("yaml")
+library(yaml)
 #library("phyloseq"); packageVersion("phyloseq")
+
+#install DECIPHER http://www2.decipher.codes/
+#if (!requireNamespace("BiocManager", quietly=TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("DECIPHER")
+#if (!requireNamespace("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("phyloseq")
+
+
+# set number of threads
+#num.cores <- 2
+
 
 args <- commandArgs(trailingOnly = TRUE)
 # set output paths
@@ -25,13 +36,20 @@ list.files(path)
 config_path  <- args[3]
 config <- yaml.load_file(config_path, as.named.list=TRUE)
 
+#setwd("/data/ampliseq/Allison/data")
+#list.files() # make sure what we think is here is actually here
+## first we're setting a few variables we're going to use ##
+# one with all sample names, by scanning our "samples" file we made earlier
+#samples is a file containing a list of samples
+#samples <- scan("samples", what="character")
+
 # Forward and reverse fastq filenames have format: SAMPLENAME_R1_001.fastq and SAMPLENAME_R2_001.fastq
 fnFs <- sort(list.files(path, pattern="_R1_001.fastq.gz", full.names = TRUE))
 fnRs <- sort(list.files(path, pattern="_R2_001.fastq.gz", full.names = TRUE))
 # Extract sample names, assuming filenames have format: SAMPLENAME-XXX.fastq.gz
 sample.names <- sapply(strsplit(basename(fnFs), "_L001_R1_001.fastq.gz"), `[`, 1)
 
-#Inspect read quality profiles of F and R
+#Inspect read quality profiles of F and R 
 #plotQualityProfile(fnFs[1:2])
 #plotQualityProfile(fnRs[1:2])
 fns2=cbind(fnFs[1:10], fnRs[1:10])
@@ -48,21 +66,22 @@ names(filtRs) <- sample.names
 # v4 -> c(220,160), maxEE=c(2,2),
 # v3v4 -> c(250,230) maxEE=c(3,6)
 out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs,
-	      truncLen=c(config$truncLenR1,config$truncLenR2),
-        maxN=0,
+	      truncLen=c(config$truncLenR1,config$truncLenR2), #(210,150)  #c(220,160),
+              maxN=0,
 	      trimLeft=c(config$trimLeftR1,config$trimLeftR2),
+	      #trimLeft=c(20,20), trimRight=c(35,35),     # trimLeft=c(10,10), 
 	      maxEE=c(config$maxEER1,config$maxEER2),
 	      #minQ=0, don't use
 	      truncQ=config$truncQ,
-	      rm.phix=TRUE,
-        compress=TRUE,
+	      rm.phix=TRUE,  
+              compress=TRUE, 
 	      verbose=TRUE,
 	      multithread=TRUE)
+#head(out)
 print(out)
+#write.table(out, "Sample_stat.tsv", sep="\t", quote=F, col.names=NA)
 # filter out the sample stat matrix reads.out ==0
 out <- out[out[, "reads.out"] > 0,]
-
-#write.table(out, "Sample_stat.tsv", sep="\t", quote=F, col.names=NA)
 
 # filter out the empty samples
 filtFs <- filtFs[file.exists(filtFs) ]
@@ -73,7 +92,9 @@ sample.names <- sapply(strsplit(basename(filtFs), "_F_filt.fastq.gz"), `[`, 1)
 names(filtFs) <- sample.names
 names(filtRs) <- sample.names
 
-
+print(sample.names)
+#filtFs[sapply(filtFs, !is.na(filtFs))]
+#filtRs[sapply(filtRs, !is.na(filtRs))]
 
 # generate error model
 errF <- learnErrors(filtFs, randomize=TRUE, multithread=TRUE)
@@ -104,7 +125,7 @@ dadaFs[[1]]
 
 # merge PE reads
 mergers <- mergePairs(dadaFs, derep_forward, dadaRs, derep_reverse, verbose=TRUE, trimOverhang=TRUE,
-                       minOverlap=config$minOverlap )  # default =12
+                       minOverlap=config$minOverlap )  # default =12 
 # Inspect the merger data.frame from the first sample
 head(mergers[[1]])
 
@@ -120,20 +141,20 @@ head (table(nchar(getSequences(seqtab))))
 seqtab.nochim <- removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE, verbose=TRUE)
 dim(seqtab.nochim)
 
-if (TRUE) {
+if (TRUE) { #FALSE) {
 #filter ASVs by length for V3V4
 #MINLEN <- 350
 #MAXLEN <- 410
 
 #filter ASVs by length for V4
-MINLEN <- config$ASVMINLEN #200
+MINLEN <- config$ASVMINLEN #200 
 MAXLEN <- config$ASVMAXLEN #250
 
 seqlens <- nchar(getSequences(seqtab.nochim))
 seqtab.nochim.filt <- seqtab.nochim [,seqlens >= MINLEN & seqlens <= MAXLEN]
 
 #filter ASVs by abundance
-MINABUND <- 10
+MINABUND <- config$ASVMINABUND   # <-1
 abundances <- colSums(seqtab.nochim.filt)
 seqtab.nochim <- seqtab.nochim.filt[,abundances >= MINABUND]
 }
@@ -151,13 +172,19 @@ write.table(track, file.path(output_path,"Sample_stats.tsv"), sep="\t", quote=F,
 
 
 #Assign taxonomy
-taxa <- assignTaxonomy(seqtab.nochim, args[4],
-		       minBoot=config$minBoot, # default 50
-		       multithread=TRUE,
+taxa <- assignTaxonomy(seqtab.nochim, "/mnt/efs/databases/DADA2/silva_nr99_v138.1_train_set.fa.gz", 
+#taxa <- assignTaxonomy(seqtab.nochim, "/mnt/efs/databases/DADA2/GTDB_bac-arc_ssu_r86.fa.gz",
+#taxa <- assignTaxonomy(seqtab.nochim, "/mnt/efs/databases/DADA2/RefSeq-RDP16S_v2_May2018.fa.gz",
+			minBoot=config$minBoot, # default 50
+		       multithread=TRUE, 
 		       tryRC=TRUE)
 
 # no species level any more
-#taxa <- addSpecies(taxa, "/mnt/efs/scratch/Xmeng/data/MiSeq/silvaDB/silva_species_assignment_v138.fa.gz", tryRC=TRUE, allowMultiple=TRUE)
+#taxa <- addSpecies(taxa, "/mnt/efs/databases/DADA2/silva_species_assignment_v138.fa.gz", tryRC=TRUE, allowMultiple=TRUE)
+#taxa <- addSpecies(taxa, "/mnt/efs/databases/DADA2/GTDB_dada2_assignment_species.fa.gz", tryRC=TRUE, allowMultiple=TRUE)
+#taxa <- addSpecies(taxa, "/mnt/efs/databases/DADA2/RefSeq-RDP_dada2_assignment_species.fa.gz", tryRC=TRUE, allowMultiple=TRUE)
+
+
 
 taxa.print <- taxa # Removing sequence rownames for display only
 rownames(taxa.print) <- NULL
