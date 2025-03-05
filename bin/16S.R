@@ -1,19 +1,8 @@
+#!/usr/bin/env Rscript
+
 library("dada2"); packageVersion("dada2")
 library(yaml)
 #library("phyloseq"); packageVersion("phyloseq")
-
-#install DECIPHER http://www2.decipher.codes/
-#if (!requireNamespace("BiocManager", quietly=TRUE))
-#    install.packages("BiocManager")
-#BiocManager::install("DECIPHER")
-#if (!requireNamespace("BiocManager", quietly = TRUE))
-#    install.packages("BiocManager")
-#BiocManager::install("phyloseq")
-
-
-# set number of threads
-#num.cores <- 2
-
 
 args <- commandArgs(trailingOnly = TRUE)
 # set output paths
