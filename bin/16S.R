@@ -1,8 +1,19 @@
-#!/usr/bin/env Rscript
-
 library("dada2"); packageVersion("dada2")
 library(yaml)
 #library("phyloseq"); packageVersion("phyloseq")
+
+#install DECIPHER http://www2.decipher.codes/
+#if (!requireNamespace("BiocManager", quietly=TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("DECIPHER")
+#if (!requireNamespace("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("phyloseq")
+
+
+# set number of threads
+#num.cores <- 2
+
 
 args <- commandArgs(trailingOnly = TRUE)
 # set output paths
@@ -109,7 +120,6 @@ dadaRs <- dada(derep_reverse, err=errR, pool=FALSE, multithread=TRUE)
 #dadaFs <- dada(derep_forward, NULL, selfConsist=TRUE, pool=TRUE, multithread=TRUE)
 #dadaRs <- dada(derep_reverse, NULL, selfConsist=TRUE, pool=TRUE, multithread=TRUE)
 
-
 dadaFs[[1]]
 
 # merge PE reads
@@ -122,33 +132,46 @@ head(mergers[[1]])
 seqtab <- makeSequenceTable(mergers)
 dim(seqtab)
 
-# Inspect distribution of sequence lengths
+message("Inspect distribution of sequence lengths.")
 head (table(nchar(getSequences(seqtab))))
-
 
 #Remove chimeras
 seqtab.nochim <- removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE, verbose=TRUE)
+message("The dimension of input seqtab.nochim.")
 dim(seqtab.nochim)
+message("The number of columns of input seqtab.nochim.")
+ncol(seqtab.nochim)
 
-if (TRUE) { #FALSE) {
+col_num<-ncol(seqtab.nochim)
+# check if morn than 1 ASV 
+if (TRUE && col_num > 1){ #FALSE) {
+ message("Filtering ASVs.")
 #filter ASVs by length for V3V4
 #MINLEN <- 350
 #MAXLEN <- 410
 
 #filter ASVs by length for V4
-MINLEN <- config$ASVMINLEN #200 
-MAXLEN <- config$ASVMAXLEN #250
+ MINLEN <- config$ASVMINLEN #200 
+ MAXLEN <- config$ASVMAXLEN #250
 
-seqlens <- nchar(getSequences(seqtab.nochim))
-seqtab.nochim.filt <- seqtab.nochim [,seqlens >= MINLEN & seqlens <= MAXLEN]
+ seqlens <- nchar(getSequences(seqtab.nochim))
+#message("The ASV length ")
+#print(seqlens)
+ seqtab.nochim.filt <- seqtab.nochim [,seqlens >= MINLEN & seqlens <= MAXLEN]
+#message("The filtered ASV length ")
+#seqlens <- nchar(getSequences(seqtab.nochim.filt))
+#print(seqlens)
 
-#filter ASVs by abundance
-MINABUND <- config$ASVMINABUND   # <-1
-abundances <- colSums(seqtab.nochim.filt)
-seqtab.nochim <- seqtab.nochim.filt[,abundances >= MINABUND]
+ #filter ASVs by abundance
+ MINABUND <- config$ASVMINABUND   #10
+ abundances <- colSums(seqtab.nochim.filt)
+ seqtab.nochim <- seqtab.nochim.filt[,abundances >= MINABUND]
 }
 
-sum(seqtab.nochim)/sum(seqtab)
+message("The sum of filtered seqtab.nochim.")
+sum(seqtab.nochim)
+message("The sum of seqtab.")
+sum(seqtab)
 
 # Track the number of reads through the pipeline
 getN <- function(x) sum(getUniques(x))
