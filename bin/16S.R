@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 library("dada2"); packageVersion("dada2")
 library(yaml)
 #library("phyloseq"); packageVersion("phyloseq")
