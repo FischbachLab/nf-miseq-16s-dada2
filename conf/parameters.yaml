@@ -1,6 +1,6 @@
 truncLenR1: 220
 truncLenR2: 160
-MaxEER1:  2
+maxEER1:  2
 maxEER2:  2
 trimLeftR1: 10
 trimLeftR2: 10
